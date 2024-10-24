@@ -26,11 +26,13 @@ func openAdminKey() (registry.Key, error) {
 func AdminBool(name string) bool {
 	key, err := openAdminKey()
 	if err != nil {
-		return false
+		// PORTABLE: return true
+		return true
 	}
 	val, _, err := key.GetIntegerValue(name)
 	if err != nil {
-		return false
+		// PORTABLE: return true
+		return true
 	}
 	return val != 0
 }

@@ -10,8 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/amnezia-vpn/amneziawg-windows/conf/dpapi"
 )
 
 const configFileSuffix = ".conf.dpapi"
@@ -70,12 +68,13 @@ func LoadFromPath(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.HasSuffix(path, configFileSuffix) {
-		bytes, err = dpapi.Decrypt(bytes, name)
-		if err != nil {
-			return nil, err
-		}
-	}
+	// PORTABLE: disable
+	// if strings.HasSuffix(path, configFileSuffix) {
+	// 	bytes, err = dpapi.Decrypt(bytes, name)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// }
 	return FromWgQuickWithUnknownEncoding(string(bytes), name)
 }
 
@@ -110,10 +109,11 @@ func (config *Config) Save(overwrite bool) error {
 	}
 	filename := filepath.Join(configFileDir, config.Name+configFileSuffix)
 	bytes := []byte(config.ToWgQuick())
-	bytes, err = dpapi.Encrypt(bytes, config.Name)
-	if err != nil {
-		return err
-	}
+	// PORTABLE: disable
+	// bytes, err = dpapi.Encrypt(bytes, config.Name)
+	// if err != nil {
+	// 	return err
+	// }
 	return writeLockedDownFile(filename, overwrite, bytes)
 }
 
