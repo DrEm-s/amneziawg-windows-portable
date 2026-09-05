@@ -1,39 +1,40 @@
-# Embeddable WireGuard Tunnel Library
+# AmneziaWG Windows — portable storage fork
 
-A simple yet effective way of leveraging the existing WireGuard codebase.
-This is more or less the same thing as the
-[embeddable-dll-service](https://git.zx2c4.com/wireguard-windows/about/embeddable-dll-service/README.md) and
-[tunnel](https://git.zx2c4.com/wireguard-windows/tree/tunnel) modules from upstream
-[wireguard-windows](https://git.zx2c4.com/wireguard-windows/about/).
+Technical dependency used by the portable AmneziaWG Windows client.
 
-## Building
+Upstream: [amnezia-vpn/amneziawg-windows](https://github.com/amnezia-vpn/amneziawg-windows)
 
-To build the embeddable dll service, run `.\build.cmd` to produce `x64\tunnel.dll`.
+## Purpose
+
+The upstream Windows library stores saved tunnel configurations using Windows DPAPI (`.conf.dpapi`). That is appropriate for an installed application, but binds saved configurations to a particular Windows account/machine.
+
+This fork keeps the upstream codebase current and applies only a small portable-storage change:
+
+- saved tunnel configurations use `.conf`;
+- configurations are stored without DPAPI encryption;
+- `PathIsEncrypted` always reports `false`;
+- upstream ACL/file handling is preserved unchanged.
+
+The main portable client separately presets the root data directory to `Data\` beside `amneziawg.exe` and disables automatic migration back to DPAPI.
+
+## Security warning
+
+Tunnel configuration files contain private keys and are stored unencrypted. Protect the portable directory like passwords and do not place it on untrusted/shared storage.
+
+## Legacy branch
+
+The previous 2024 portable implementation is preserved in the `legacy-portable-2024` branch.
+
+That older implementation included broader changes which are intentionally not carried into the current portable patch, including permissive file/directory modes and forced admin-related behavior.
+
+## Maintenance
+
+The portable diff should stay intentionally small. To update this fork:
+
+1. sync `master` with the corresponding upstream `amneziawg-windows` revision;
+2. reapply only the plain-`.conf` storage change in `conf/store.go`;
+3. build/test together with the matching portable client revision.
 
 ## License
 
-The contents of this directory are MIT-licensed. Files which have been modified
-from their upstream versions will also list the Mozilla Foundation as a copyright
-holder.
-
-```text
-Copyright (C) 2018-2021 WireGuard LLC. All Rights Reserved.
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
-```
+The upstream project is MIT-licensed. Original copyright and license notices are retained.
