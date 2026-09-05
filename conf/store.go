@@ -10,12 +10,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/amnezia-vpn/amneziawg-windows/v3/conf/dpapi"
 )
 
-const configFileSuffix = ".conf.dpapi"
-const configFileUnencryptedSuffix = ".conf"
+const configFileSuffix = ".conf"
 
 func ListConfigNames() ([]string, error) {
 	configFileDir, err := tunnelConfigurationsDirectory()
@@ -70,30 +67,19 @@ func LoadFromPath(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.HasSuffix(path, configFileSuffix) {
-		bytes, err = dpapi.Decrypt(bytes, name)
-		if err != nil {
-			return nil, err
-		}
-	}
 	return FromWgQuickWithUnknownEncoding(string(bytes), name)
 }
 
 func PathIsEncrypted(path string) bool {
-	return strings.HasSuffix(filepath.Base(path), configFileSuffix)
+	return false
 }
 
 func NameFromPath(path string) (string, error) {
 	name := filepath.Base(path)
-	if !((len(name) > len(configFileSuffix) && strings.HasSuffix(name, configFileSuffix)) ||
-		(len(name) > len(configFileUnencryptedSuffix) && strings.HasSuffix(name, configFileUnencryptedSuffix))) {
-		return "", errors.New("Path must end in either " + configFileSuffix + " or " + configFileUnencryptedSuffix)
+	if len(name) <= len(configFileSuffix) || !strings.HasSuffix(name, configFileSuffix) {
+		return "", errors.New("Path must end in " + configFileSuffix)
 	}
-	if strings.HasSuffix(path, configFileSuffix) {
-		name = strings.TrimSuffix(name, configFileSuffix)
-	} else {
-		name = strings.TrimSuffix(name, configFileUnencryptedSuffix)
-	}
+	name = strings.TrimSuffix(name, configFileSuffix)
 	if !TunnelNameIsValid(name) {
 		return "", errors.New("Tunnel name is not valid")
 	}
@@ -110,10 +96,6 @@ func (config *Config) Save(overwrite bool) error {
 	}
 	filename := filepath.Join(configFileDir, config.Name+configFileSuffix)
 	bytes := []byte(config.ToWgQuick())
-	bytes, err = dpapi.Encrypt(bytes, config.Name)
-	if err != nil {
-		return err
-	}
 	return writeLockedDownFile(filename, overwrite, bytes)
 }
 
